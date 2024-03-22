@@ -207,4 +207,4 @@ Agent training and interaction modules should be developed in C language without
 Add a Web-based version of the user interface in any format (MPA, SPA) using appropriate frameworks. The Web interface must meet at least all the basic functional requirements from the parts above ([Part 1](#part-1-implementation-of-the-maze-project)-[Part 3](#part-3-solving-the-maze)).
 
 
-💡 [Tap here](https://forms.yandex.ru/cloud/64181d8ff47e7326ab0fc364/) **to leave your feedback on the project**. Product Team really tries to make your educational experience better.
+💡 [Tap here](https://forms.yandex.ru/cloud/65f565f673cee7d17b21d20e/) **to leave your feedback on the project**. Product Team really tries to make your educational experience better.
