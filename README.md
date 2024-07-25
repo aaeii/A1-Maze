@@ -4,6 +4,8 @@ Implementation of the Maze project.
 
 The russian version of the task can be found in the repository.
 
+💡 [Tap here](https://new.oprosso.net/p/4cb31ec3f47a4596bc758ea1861fb624) **to leave your feedback on the project**. It's anonymous and will help our team make your educational experience better. We recommend completing the survey immediately after the project.
+
 ## Contents
 
 1. [Chapter I](#chapter-i) \
@@ -206,5 +208,3 @@ Agent training and interaction modules should be developed in C language without
 
 Add a Web-based version of the user interface in any format (MPA, SPA) using appropriate frameworks. The Web interface must meet at least all the basic functional requirements from the parts above ([Part 1](#part-1-implementation-of-the-maze-project)-[Part 3](#part-3-solving-the-maze)).
 
-
-💡 [Tap here](https://forms.yandex.ru/cloud/65f565f673cee7d17b21d20e/) **to leave your feedback on the project**. Product Team really tries to make your educational experience better.
