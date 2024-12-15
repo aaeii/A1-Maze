@@ -23,7 +23,7 @@ typedef struct {
 
 Maze *create_maze();
 void free_maze(Maze *maze);
-bool load_maze(const char *filename, Maze *maze);
+bool load_maze(const char *filepath, Maze *maze);
 
 
 #endif
