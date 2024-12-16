@@ -24,6 +24,10 @@ typedef struct {
 Maze *create_maze();
 void free_maze(Maze *maze);
 bool load_maze(const char *filepath, Maze *maze);
+void generate_maze(Maze *maze, int rows, int cols);
+void merge_sets(Maze *maze, int i, int cols, int rows, int *sets);
+void save_maze(const Maze *maze, char *filename);
+
 
 
 #endif

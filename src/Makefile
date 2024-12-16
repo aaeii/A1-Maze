@@ -1,5 +1,5 @@
 # Название исполняемого файла
-TARGET = my_app
+TARGET = maze
 
 # Папка для исполняемого файла
 BUILD_DIR = build
@@ -57,3 +57,4 @@ run: $(BUILD_DIR)/$(TARGET)
 # Очистка
 clean:
 	rm -rf $(OUT_DIR) $(BUILD_DIR)
+	rm g_maze.txt
