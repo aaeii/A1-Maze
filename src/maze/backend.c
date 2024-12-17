@@ -4,7 +4,7 @@ Maze *create_maze() {
   Maze *maze = calloc(1, sizeof(Maze));
 
   if (maze == NULL) {
-      return NULL;
+    return NULL;
   }
 
   maze->rows = 0;
@@ -39,8 +39,8 @@ bool load_maze(const char *filepath, Maze *maze) {
 }
 
 void merge_sets(Maze *maze, int i, int cols, int rows, int *sets) {
-  int old_set;
-  for (int j = 0; j < cols - 1; j++) {  // merging sets randomly
+  int old_set = 0;
+  for (int j = 0; j < cols - 1; j++) {
     if (sets[j] != sets[j + 1] && (rand() % 2 == 0 || i == rows - 1)) {
       maze->vertical_walls[i][j] = 0;
       old_set = sets[j + 1];
@@ -56,37 +56,52 @@ void merge_sets(Maze *maze, int i, int cols, int rows, int *sets) {
 }
 
 void generate_maze(Maze *maze, int rows, int cols) {
+  // Устанавливает количество строк и столбцов в структуре Maze
   maze->rows = rows;
   maze->cols = cols;
 
+  // Создает массив sets для хранения идентификаторов множеств (групп ячеек
+  // лабиринта)
   int sets[MAX_SIZE];
-  int next_set = 0;  // set number
+  // Инициализирует генератор случайных чисел с помощью текущего времени
+  int next_set = 0;
   srand(time(NULL));
-  for (int j = 0; j < cols; j++) {  // assigning set number
+
+  // Заполняет массив sets, присваивая каждой колонне уникальный идентификатор
+  // множества
+  for (int j = 0; j < cols; j++) {
     sets[j] = next_set++;
   }
 
-  for (int i = 0; i < rows; i++) {  // generating maze each row at once
+  // Для каждой строки (i) вызывает функцию merge_sets (вертикальные стены),
+  // которая объединяет множества в зависимости от текущих стен
+  for (int i = 0; i < rows; i++) {
     merge_sets(maze, i, cols, rows, sets);
+    // Создает set_connected для отслеживания, были ли соединены множества в
+    // текущей строке
     bool set_connected[MAX_SIZE * MAX_SIZE] = {0};
     for (int j = 0; j < cols; j++) {
+      // Если это последняя строка, устанавливает горизонтальные стены (границу)
       if (i == rows - 1) {
-        maze->horizontal_walls[i][j] = 1;  // building horizontal border
-      } else if (rand() % 2 == 0 ||
-                 !set_connected[sets[j]]) {  // each set needs a bottom path
+        maze->horizontal_walls[i][j] = 1;
+        // Или убирает горизонтальную стену и помечает множество как соединенное
+      } else if (rand() % 2 == 0 || !set_connected[sets[j]]) {
         maze->horizontal_walls[i][j] = 0;
         set_connected[sets[j]] = true;
       } else {
+        // Если предыдущие условия не выполнены, оставляет стену на месте
         maze->horizontal_walls[i][j] = 1;
       }
     }
-    for (int j = 0; j < cols; j++) {  // numerating new sets...
+
+    // Если горизонтальная стена установлена,
+    // обновляет идентификаторы множеств для следующей строки
+    for (int j = 0; j < cols; j++) {
       if (maze->horizontal_walls[i][j] == 1 && i < rows - 1) {
         sets[j] = next_set++;
       }
-
-      if (j == cols - 1)
-        maze->vertical_walls[i][j] = 1;  // ...and building vertical border
+      // Устанавливает вертикальные стены на правом краю лабиринта
+      if (j == cols - 1) maze->vertical_walls[i][j] = 1;
     }
   }
 }

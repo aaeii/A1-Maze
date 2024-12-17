@@ -1,20 +1,19 @@
 #include "frontend.h"
+
 #include "../maze/backend.h"
 
-void render_maze(int start_y, int start_x, Maze *maze, int **path, bool is_path) {
-
-  int max_height = 22;
-  int max_width = 76;                
-  int cell_height = max_height / maze->rows;
-  int cell_width = max_width / maze->cols;
+void render_maze(int start_y, int start_x, Maze *maze, int **path,
+                 bool is_path) {
+  int cell_height = MAX_HEIGHT / maze->rows;
+  int cell_width = MAX_WIDTH / maze->cols;
   int x = 0;
   int y = 0;
 
-  mvhline(start_y, start_x, '_', max_width);
-  mvvline(start_y + 1, start_x, '|', max_height);
+  mvhline(start_y, start_x, '_', MAX_WIDTH);
+  mvvline(start_y + 1, start_x, '|', MAX_HEIGHT);
 
-  for (int i = 0; i < maze->rows; ++i) {
-    for (int j = 0; j < maze->cols; ++j) {
+  for (int i = 0; i < maze->rows; i++) {
+    for (int j = 0; j < maze->cols; j++) {
       y = start_y + i * cell_height;
       x = start_x + j * cell_width;
       if (is_path && path[i][j]) {
@@ -30,7 +29,7 @@ void render_maze(int start_y, int start_x, Maze *maze, int **path, bool is_path)
       }
 
       if (maze->vertical_walls[i][j]) {
-        for (int k = 1; k <= cell_height; ++k) {
+        for (int k = 1; k <= cell_height; k++) {
           mvprintw(y + k, x + cell_width, "|");
         }
       }
@@ -44,10 +43,10 @@ bool get_dimension(int start_y, int start_x, int *rows, int *cols) {
   attron(COLOR_PAIR(1));
 
   echo();
-  mvprintw(start_y + 5, start_x, "Enter maze rows (1-50): ");
+  mvprintw(start_y + 5, start_x, "Enter maze rows (1-50):");
   refresh();
   scanw("%d", rows);
-  mvprintw(start_y + 6, start_x, "Enter maze cols (1-50): ");
+  mvprintw(start_y + 6, start_x, "Enter maze cols (1-50):");
   refresh();
   scanw("%d", cols);
   noecho();
@@ -64,7 +63,6 @@ bool get_dimension(int start_y, int start_x, int *rows, int *cols) {
 }
 
 void print_menu(int start_y, int start_x) {
-
   attron(COLOR_PAIR(1));
 
   mvprintw(start_y, start_x, "f [load maze from file]");
@@ -84,7 +82,6 @@ void print_menu(int start_y, int start_x) {
 }
 
 void main_menu() {
-
   Maze *maze = create_maze();
 
   bool quit = false;
@@ -92,31 +89,30 @@ void main_menu() {
   int ch = 0;
 
   while (!quit) {
-
     print_menu(MENU_Y, MENU_X);
 
     ch = getch();
 
     switch (ch) {
-    case 'q':
-      quit = true;
-      break;
-    case 'f':
-      f_case(maze, filepath);
-      break;
-    case 'g':
-      g_case(maze);
-      break; 
-    default:
-      break;
+      case 'q':
+        quit = true;
+        break;
+      case 'f':
+        f_case(maze, filepath);
+        break;
+      case 'g':
+        g_case(maze);
+        break;
+      default:
+        attron(COLOR_PAIR(3));
+        mvprintw(2, 25, "Incorrect input, please try again\n");
+        attron(COLOR_PAIR(3));
+        break;
     }
-
   }
-
 }
 
 void get_filename(int start_y, int start_x, char *filepath) {
-
   char filename[BUFFER];
 
   attron(COLOR_PAIR(1));
@@ -126,7 +122,7 @@ void get_filename(int start_y, int start_x, char *filepath) {
 
   mvgetstr(start_y + 6, start_x, filename);
 
-  snprintf(filepath, 512, DIR"%s", filename);
+  snprintf(filepath, BUFFER * 2, DIR "%s", filename);
 
   noecho();
   clear();
@@ -134,22 +130,21 @@ void get_filename(int start_y, int start_x, char *filepath) {
 }
 
 void f_case(Maze *maze, char *filepath) {
-
   get_filename(MENU_Y, MENU_X, filepath);
 
   if (load_maze(filepath, maze)) {
-        render_maze(0, 0, maze, 0, 0);
+    render_maze(0, 0, maze, 0, 0);
   } else {
-        attron(COLOR_PAIR(2));
-        mvprintw(2, 25, "Failed to load maze\n");
-        attron(COLOR_PAIR(2));
+    attron(COLOR_PAIR(2));
+    mvprintw(2, 25, "Failed to load maze\n");
+    attron(COLOR_PAIR(2));
   }
 }
 
 void g_case(Maze *maze) {
   int g_rows = 0;
   int g_cols = 0;
- 
+
   bool is_correct_maze = get_dimension(MENU_Y, MENU_X, &g_rows, &g_cols);
 
   clear();
@@ -157,7 +152,6 @@ void g_case(Maze *maze) {
   print_menu(MENU_Y, MENU_X);
 
   if (is_correct_maze) {
-
     generate_maze(maze, g_rows, g_cols);
 
     render_maze(0, 0, maze, 0, 0);
@@ -171,34 +165,31 @@ void g_case(Maze *maze) {
   }
 }
 
-
 int main(void) {
+  // FILE *file = fopen("data.txt", "w");
 
-    // FILE *file = fopen("data.txt", "w");
+  // fprintf(file, "%d\n", *g_rows);
+  // fprintf(file, "%d\n", *g_cols);
 
-    // fprintf(file, "%d\n", *g_rows);
-    // fprintf(file, "%d\n", *g_cols);
-   
-    // fclose(file);
-    
-    if (initscr() == NULL) {
-        fprintf(stderr, "Failed to initialize ncurses\n");
-        return EXIT_FAILURE;
-    }
+  // fclose(file);
 
-    noecho();
-    curs_set(0);
-    keypad(stdscr, TRUE);
+  if (initscr() == NULL) {
+    fprintf(stderr, "Failed to initialize ncurses\n");
+    return EXIT_FAILURE;
+  }
 
-    start_color();
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    init_pair(2, COLOR_RED, COLOR_BLACK);
+  noecho();
+  curs_set(0);
+  keypad(stdscr, TRUE);
 
-    main_menu();
+  start_color();
+  init_pair(1, COLOR_GREEN, COLOR_BLACK);
+  init_pair(2, COLOR_RED, COLOR_BLACK);
+  init_pair(3, COLOR_YELLOW, COLOR_BLACK);
 
+  main_menu();
 
-    endwin();
+  endwin();
 
-    return EXIT_SUCCESS;
-    
+  return EXIT_SUCCESS;
 }

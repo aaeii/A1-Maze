@@ -28,6 +28,4 @@ void generate_maze(Maze *maze, int rows, int cols);
 void merge_sets(Maze *maze, int i, int cols, int rows, int *sets);
 void save_maze(const Maze *maze, char *filename);
 
-
-
 #endif

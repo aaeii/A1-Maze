@@ -54,6 +54,17 @@ $(BUILD_DIR):
 run: $(BUILD_DIR)/$(TARGET)
 	$(BUILD_DIR)/$(TARGET)
 
+format:
+	cp ../materials/linters/.clang-format ../src/.clang-format
+	clang-format -style=Google -n gui/*.c gui/*.h
+	clang-format -style=Google -n maze/*.c maze/*.h
+#	clang-format -style=Google -n test/*.c test/*.h
+
+	clang-format -style=Google -i gui/*.c gui/*.h
+	clang-format -style=Google -i maze/*.c maze/*.h
+#	clang-format -style=Google -i test/*.c test/*.h
+	rm .clang-format	
+
 # Очистка
 clean:
 	rm -rf $(OUT_DIR) $(BUILD_DIR)
