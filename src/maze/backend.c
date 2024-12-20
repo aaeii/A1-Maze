@@ -17,11 +17,11 @@ Maze *create_maze() {
 
 void free_maze(Maze *maze) { free(maze); }
 
-bool load_maze(const char *filepath, Maze *maze) {
+bool load_maze(char *filepath, Maze *maze) {
   bool isLoad = false;
   FILE *file = fopen(filepath, "r");
-  if (file != NULL) {
-    fscanf(file, "%d %d", &maze->rows, &maze->cols);
+  if (file != NULL && fscanf(file, "%d %d", &maze->rows, &maze->cols) == 2) {
+    
     for (int i = 0; i < maze->rows; i++) {
       for (int j = 0; j < maze->cols; j++) {
         fscanf(file, "%d", &maze->vertical_walls[i][j]);
@@ -106,7 +106,7 @@ void generate_maze(Maze *maze, int rows, int cols) {
   }
 }
 
-void save_maze(const Maze *maze, char *filename) {
+void save_maze(Maze *maze, char *filename) {
   FILE *file = fopen(filename, "w");
   if (file != NULL) {
     fprintf(file, "%d %d\n", maze->rows, maze->cols);
@@ -125,5 +125,104 @@ void save_maze(const Maze *maze, char *filename) {
       fprintf(file, "\n");
     }
     fclose(file);
+  }
+}
+
+Cave *create_cave() {
+  Cave *cave = calloc(1, sizeof(Cave));
+
+  if (cave == NULL) {
+    return NULL;
+  }
+
+  cave->rows = 0;
+  cave->cols = 0;
+  memset(cave->cells, 0, sizeof(cave->cells));
+  return cave;
+}
+
+void free_cave(Cave *cave) { free(cave); }
+
+bool load_cave(char *filename, Cave *cave) {
+  bool isLoad = false;
+  FILE *file = fopen(filename, "r");
+
+  if (file != NULL && fscanf(file, "%d %d", &cave->rows, &cave->cols) == 2) {
+
+      for (int i = 0; i < cave->rows; ++i) {
+        for (int j = 0; j < cave->cols; ++j) {
+          fscanf(file, "%d", &cave->cells[i][j]);
+        }
+      }
+      isLoad = true;
+    
+
+    fclose(file);
+  }
+  return isLoad;
+}
+
+void initialize_can_change(int can_change[MAX_SIZE][MAX_SIZE], int rows,
+                           int cols, int initial_chance) {
+  srand(time(NULL));
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      int random_value = rand() % 100;
+      if (random_value < initial_chance) {
+        can_change[i][j] = 1;  // can change
+      } else {
+        can_change[i][j] = 0;  // cant change
+      }
+    }
+  }
+}
+
+int count_live_neighbors(Cave *cave, int y, int x) {
+  int count = 0, ny, nx;
+  int directions[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1},
+                          {0, 1},   {1, -1}, {1, 0},  {1, 1}};
+  for (int i = 0; i < 8; i++) {
+    ny = y + directions[i][0];
+    nx = x + directions[i][1];
+    if (ny >= 0 && ny < cave->rows && nx >= 0 && nx < cave->cols) {
+      if (cave->cells[ny][nx] == 1) {
+        count++;
+      }
+    } else {
+      count++;  // counting cells outside the cave
+    }
+  }
+  return count;
+}
+
+void update_cave(Cave *cave, int birth_limit, int death_limit,
+                 int can_change[MAX_SIZE][MAX_SIZE]) {
+
+  int new_cells[MAX_SIZE][MAX_SIZE];
+  int live_neighbors = 0;
+  
+  for (int i = 0; i < cave->rows; i++) {
+    for (int j = 0; j < cave->cols; j++) {
+      new_cells[i][j] = cave->cells[i][j];
+    }
+  }
+
+  for (int i = 0; i < cave->rows; i++) {
+    for (int j = 0; j < cave->cols; j++) {
+      live_neighbors = count_live_neighbors(cave, i, j);
+      if (cave->cells[i][j] == 1 && live_neighbors < death_limit &&
+          can_change[i][j]) {
+        new_cells[i][j] = 0;
+      } else if (cave->cells[i][j] == 0 && live_neighbors > birth_limit &&
+                 can_change[i][j]) {
+        new_cells[i][j] = 1;
+      }
+    }
+  }
+
+  for (int i = 0; i < cave->rows; i++) {
+    for (int j = 0; j < cave->cols; j++) {
+      cave->cells[i][j] = new_cells[i][j];
+    }
   }
 }

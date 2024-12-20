@@ -15,13 +15,24 @@
 #define MAX_HEIGHT 22
 #define MAX_WIDTH 86
 
+int nanosleep(const struct timespec *req, struct timespec *rem);
+void msleep(long msec);
+
 void render_maze(int start_y, int start_x, Maze *maze, int **path,
                  bool is_path);
 void main_menu();
 void print_menu(int start_y, int start_x);
 void f_case(Maze *maze, char *filepath);
 void g_case(Maze *maze);
+void c_case(Cave *cave, char *filepath);
+bool get_cave_info(int start_y, int start_x, int *birth_limit, int *death_limit,
+                   int *initial_chance, int *mode, int *delay);
+void step_by_step_mode(Cave *cave, int birth_limit, int death_limit,
+                       int can_change[MAX_SIZE][MAX_SIZE]);
+void automatic_mode(Cave *cave, int birth_limit, int death_limit, int delay,
+                    int can_change[MAX_SIZE][MAX_SIZE]);
 void get_filename(int start_y, int start_x, char *filepath);
 bool get_dimension(int start_y, int start_x, int *rows, int *cols);
+void render_cave(int start_y, int start_x, Cave *cave);
 
 #endif
