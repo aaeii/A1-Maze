@@ -21,7 +21,6 @@ bool load_maze(char *filepath, Maze *maze) {
   bool isLoad = false;
   FILE *file = fopen(filepath, "r");
   if (file != NULL && fscanf(file, "%d %d", &maze->rows, &maze->cols) == 2) {
-    
     for (int i = 0; i < maze->rows; i++) {
       for (int j = 0; j < maze->cols; j++) {
         fscanf(file, "%d", &maze->vertical_walls[i][j]);
@@ -143,19 +142,45 @@ Cave *create_cave() {
 
 void free_cave(Cave *cave) { free(cave); }
 
+int **create_path() {
+  int **path = calloc(MAX_SIZE, sizeof(int *));
+
+  if (path == NULL) {
+    return NULL;
+  }
+
+  for (int i = 0; i < MAX_SIZE; i++) {
+    path[i] = calloc(MAX_SIZE, sizeof(int));
+
+    if (path[i] == NULL) {
+      for (int j = 0; j < i; j++) {
+        free(path[j]);
+      }
+      free(path);
+      return NULL;
+    }
+  }
+  return path;
+}
+
+void free_path(int **path) {
+  for (int i = 0; i < MAX_SIZE; ++i) {
+    free(path[i]);
+  }
+  free(path);
+}
+
 bool load_cave(char *filename, Cave *cave) {
   bool isLoad = false;
   FILE *file = fopen(filename, "r");
 
   if (file != NULL && fscanf(file, "%d %d", &cave->rows, &cave->cols) == 2) {
-
-      for (int i = 0; i < cave->rows; ++i) {
-        for (int j = 0; j < cave->cols; ++j) {
-          fscanf(file, "%d", &cave->cells[i][j]);
-        }
+    for (int i = 0; i < cave->rows; ++i) {
+      for (int j = 0; j < cave->cols; ++j) {
+        fscanf(file, "%d", &cave->cells[i][j]);
       }
-      isLoad = true;
-    
+    }
+    isLoad = true;
 
     fclose(file);
   }
@@ -169,9 +194,9 @@ void initialize_can_change(int can_change[MAX_SIZE][MAX_SIZE], int rows,
     for (int j = 0; j < cols; j++) {
       int random_value = rand() % 100;
       if (random_value < initial_chance) {
-        can_change[i][j] = 1;  // can change
+        can_change[i][j] = 1;
       } else {
-        can_change[i][j] = 0;  // cant change
+        can_change[i][j] = 0;
       }
     }
   }
@@ -189,7 +214,7 @@ int count_live_neighbors(Cave *cave, int y, int x) {
         count++;
       }
     } else {
-      count++;  // counting cells outside the cave
+      count++;
     }
   }
   return count;
@@ -197,10 +222,9 @@ int count_live_neighbors(Cave *cave, int y, int x) {
 
 void update_cave(Cave *cave, int birth_limit, int death_limit,
                  int can_change[MAX_SIZE][MAX_SIZE]) {
-
   int new_cells[MAX_SIZE][MAX_SIZE];
   int live_neighbors = 0;
-  
+
   for (int i = 0; i < cave->rows; i++) {
     for (int j = 0; j < cave->cols; j++) {
       new_cells[i][j] = cave->cells[i][j];
@@ -223,6 +247,87 @@ void update_cave(Cave *cave, int birth_limit, int death_limit,
   for (int i = 0; i < cave->rows; i++) {
     for (int j = 0; j < cave->cols; j++) {
       cave->cells[i][j] = new_cells[i][j];
+    }
+  }
+}
+
+int get_max_size() { return MAX_SIZE; }
+
+void load_maze_from_content(char *str, Maze *maze) {
+  char *ptr = str;
+  int read = 0;
+  sscanf(ptr, "%d %d%n", &maze->rows, &maze->cols, &read);
+  ptr += read;
+  for (int i = 0; i < maze->rows; ++i) {
+    for (int j = 0; j < maze->cols; ++j) {
+      sscanf(ptr, "%d%n", &maze->vertical_walls[i][j], &read);
+      ptr += read;
+    }
+  }
+  for (int i = 0; i < maze->rows; ++i) {
+    for (int j = 0; j < maze->cols; ++j) {
+      sscanf(ptr, "%d%n", &maze->horizontal_walls[i][j], &read);
+      ptr += read;
+    }
+  }
+}
+
+bool valid(Maze *m, int x, int y) {
+  return (x >= 0 && x < m->rows && y >= 0 && y < m->cols);
+}
+
+int bfs(Maze *maze, Point start, Point end, int **path) {
+  empty_arr(path);
+  int is_path = 0;
+  int visited_point[MAX_SIZE][MAX_SIZE] = {0};
+  Point queue[MAX_SIZE * MAX_SIZE];  // oчередь для хранения координат ячеек
+  Point prev[MAX_SIZE][MAX_SIZE] = {{{-1, -1}}};  // предыдущие координаты
+  int head = 0, tail = 1;
+  queue[tail] = start;
+  visited_point[start.x][start.y] = 1;
+  while ((head < tail) || is_path != 1) {
+    Point current = queue[head++];  // берем текущую точку из очереди
+    if (current.y == end.y && current.x == end.x) {  // восст путь
+      Point current_path = end;
+      while (current_path.y != -1) {
+        path[current_path.x][current_path.y] = 1;
+        current_path = prev[current_path.x][current_path.y];
+      }
+      is_path = 1;
+    }
+    check_neighboring_cells(maze, current, visited_point, queue, prev, &tail);
+  }
+  return is_path;
+}
+
+bool check_presence_of_walls(int i, Maze *m, Point current, int new_x,
+                             int new_y) {
+  return ((i == 1 && m->horizontal_walls[current.x][current.y]) ||
+          (i == 0 && m->vertical_walls[current.x][current.y]) ||
+          (i == 3 && m->horizontal_walls[new_x][new_y]) ||
+          (i == 2 && m->vertical_walls[new_x][new_y]));
+}
+
+void empty_arr(int **a) {
+  for (int i = 0; i < MAX_SIZE; i++) {
+    for (int j = 0; j < MAX_SIZE; j++) {
+      a[i][j] = 0;
+    }
+  }
+}
+
+void check_neighboring_cells(Maze *maze, Point cur, int v_p[][MAX_SIZE],
+                             Point q[MAX_SIZE * MAX_SIZE],
+                             Point prev[][MAX_SIZE], int *tail) {
+  int directions[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+  for (int i = 0; i < 4; i++) {
+    int new_x = cur.x + directions[i][0], new_y = cur.y + directions[i][1];
+    if (valid(maze, new_x, new_y) && v_p[new_x][new_y] == 0 &&
+        !check_presence_of_walls(i, maze, cur, new_x, new_y)) {
+      v_p[new_x][new_y] = 1;
+      q[(*tail)++] = (Point){new_x, new_y};  // добавляем новую ячейку в очередь
+      prev[new_x][new_y] =
+          cur;  // текущая ячейка как родитель соседней ячейки new
     }
   }
 }
