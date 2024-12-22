@@ -42,7 +42,10 @@ VALGRIND_FLAGS=--trace-children=yes --track-fds=yes --track-origins=yes --leak-c
 all: install run
 
 # Правило по умолчанию
-install: clean $(OUT_DIR) $(BUILD_DIR) $(BUILD_DIR)/$(TARGET)
+install: uninstall clean $(OUT_DIR) $(BUILD_DIR) $(BUILD_DIR)/$(TARGET)
+
+uninstall:
+	rm -rf $(BUILD_DIR) $(OUT_DIR)
 
 # Правило для компиляции исполняемого файла
 $(BUILD_DIR)/$(TARGET): $(OBJS)
@@ -99,7 +102,6 @@ valgrind:
 	CK_FORK=no valgrind $(VALGRIND_FLAGS) --log-file=RESULT_VALGRIND.txt ./val_test.out	
 
 clean:
-	rm -rf $(OUT_DIR) $(BUILD_DIR)
 	rm -rf report tests
 	rm -rf test_maze val_test.out RESULT_VALGRIND.txt s21_test.info g_maze.txt test_maze *.gcno *.gcda
 	
