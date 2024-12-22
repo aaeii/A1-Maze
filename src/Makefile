@@ -42,7 +42,7 @@ VALGRIND_FLAGS=--trace-children=yes --track-fds=yes --track-origins=yes --leak-c
 all: install run
 
 # Правило по умолчанию
-install: $(OUT_DIR) $(BUILD_DIR) $(BUILD_DIR)/$(TARGET)
+install: clean $(OUT_DIR) $(BUILD_DIR) $(BUILD_DIR)/$(TARGET)
 
 # Правило для компиляции исполняемого файла
 $(BUILD_DIR)/$(TARGET): $(OBJS)
@@ -63,11 +63,11 @@ $(OUT_DIR):
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-tests: $(TEST_SRCS)
+tests: clean $(TEST_SRCS)
 	@$(CC) $(CFLAGS) $(TEST_SRCS) $(BACKEND_SRC) -o $(TEST_TARGET) $(CHECK_LIBS)
 	@./$(TEST_TARGET)
 
-gcov_report: test
+gcov_report: clean test
 	$(CC) $(CFLAGS) -fprofile-arcs -ftest-coverage $(BACKEND_SRC) $(TEST_SRCS) -o tests $(CHECK_LIBS)
 	./tests
 	lcov -t "t_maze" -o s21_test.info -c -d .
@@ -83,7 +83,7 @@ run: $(BUILD_DIR)/$(TARGET)
 	$(BUILD_DIR)/$(TARGET)
 
 format:
-	cp ../materials/linters/.clang-format ../src/.clang-format
+# cp ../materials/linters/.clang-format ../src/.clang-format
 	clang-format -style=Google -n gui/*.c gui/*.h
 	clang-format -style=Google -n maze/*.c maze/*.h
 	clang-format -style=Google -n test/*.c
@@ -91,7 +91,7 @@ format:
 	clang-format -style=Google -i gui/*.c gui/*.h
 	clang-format -style=Google -i maze/*.c maze/*.h
 	clang-format -style=Google -i test/*.c
-	rm .clang-format
+	rm -rf .clang-format
 
 
 valgrind:
@@ -100,6 +100,6 @@ valgrind:
 
 clean:
 	rm -rf $(OUT_DIR) $(BUILD_DIR)
-	rm -rf report
-	rm test_maze val_test.out RESULT_VALGRIND.txt s21_test.info g_maze.txt test_maze
+	rm -rf report tests
+	rm -rf test_maze val_test.out RESULT_VALGRIND.txt s21_test.info g_maze.txt test_maze *.gcno *.gcda
 	

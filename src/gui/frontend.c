@@ -348,23 +348,37 @@ void msleep(long msec) {
 }
 
 void p_case(Point start, Point end, Maze *maze, int **path) {
-  // bfs(maze, start, end, path);
   attron(COLOR_PAIR(1));
-  mvprintw(MENU_Y, MENU_X + 75, "Start point: ");
+  mvprintw(MENU_Y + 5, MENU_X, "Start point: ");
   refresh();
   echo();
   scanw("%d%d", &start.x, &start.y);
-  mvprintw(MENU_Y + 1, MENU_X + 75, "End point: ");
+  mvprintw(MENU_Y + 6, MENU_X, "End point: ");
   scanw("%d%d", &end.x, &end.y);
   noecho();
   clear();
   attroff(COLOR_PAIR(1));
-
-  if (valid(maze, start.x, start.y) == 1) {
-    render_maze(MENU_Y + 7, MENU_X, maze, path, bfs(maze, start, end, path));
+  if (end.x == 0 && end.y == 0) {
+    int tmp_x = start.x;
+    start.x = end.x;
+    end.x = tmp_x;
+    int tmp_y = start.y;
+    start.y = end.y;
+    end.y = tmp_y;
+  }
+  if (valid(maze, start.x, start.y) == 1 && valid(maze, end.x, end.y) == 1) {
+    int path_check = bfs(maze, start, end, path);
+    if (path_check == 1) {
+      render_maze(0, 0, maze, path, 1);
+    } else if (path_check == 0) {
+      mvprintw(MENU_Y + 5, MENU_X, "Path not found\n");
+      refresh();
+      // clear();
+    }
   } else {
     mvprintw(MENU_Y + 5, MENU_X, "Incorrect point\n");
-    clear();
+    refresh();
+    // clear();
   }
 }
 

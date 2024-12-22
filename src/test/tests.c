@@ -276,6 +276,24 @@ START_TEST(test_load_cave) {
   remove("test_cave.txt");
 }
 
+START_TEST(test_bfs) {
+  Maze *maze = create_maze();
+  int **path = create_path();
+  load_maze("examples/maze2.txt", maze);
+  ck_assert_int_eq(maze->rows, 10);
+  ck_assert_int_eq(maze->cols, 10);
+  Point start = {0, 0};
+  Point end = {2, 4};
+  ck_assert_int_eq(bfs(maze, start, end, path), 1);
+
+  start.x = 12;
+  end.y = -1;
+  ck_assert_int_eq(bfs(maze, start, end, path), 0);
+
+  free_maze(maze);
+  free_path(path);
+}
+
 int main(void) {
   srand(time(NULL));
   Suite *s = suite_create("Maze");
@@ -294,6 +312,7 @@ int main(void) {
   tcase_add_test(tc_core, test_count_live_neighbors);
   tcase_add_test(tc_core, test_update_cave);
   tcase_add_test(tc_core, test_load_cave);
+  tcase_add_test(tc_core, test_bfs);
 
   suite_add_tcase(s, tc_core);
 

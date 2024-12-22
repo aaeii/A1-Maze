@@ -152,13 +152,13 @@ int **create_path() {
   for (int i = 0; i < MAX_SIZE; i++) {
     path[i] = calloc(MAX_SIZE, sizeof(int));
 
-    if (path[i] == NULL) {
-      for (int j = 0; j < i; j++) {
-        free(path[j]);
-      }
-      free(path);
-      return NULL;
-    }
+    // if (path[i] == NULL) {
+    //   for (int j = 0; j < i; j++) {
+    //     free(path[j]);
+    //   }
+    //   free(path);
+    //   return NULL;
+    // }
   }
   return path;
 }
@@ -279,23 +279,26 @@ bool valid(Maze *m, int x, int y) {
 int bfs(Maze *maze, Point start, Point end, int **path) {
   empty_arr(path);
   int is_path = 0;
-  int visited_point[MAX_SIZE][MAX_SIZE] = {0};
-  Point queue[MAX_SIZE * MAX_SIZE];  // oчередь для хранения координат ячеек
-  Point prev[MAX_SIZE][MAX_SIZE] = {{{-1, -1}}};  // предыдущие координаты
-  int head = 0, tail = 1;
-  queue[tail] = start;
-  visited_point[start.x][start.y] = 1;
-  while ((head < tail) || is_path != 1) {
-    Point current = queue[head++];  // берем текущую точку из очереди
-    if (current.y == end.y && current.x == end.x) {  // восст путь
-      Point current_path = end;
-      while (current_path.y != -1) {
-        path[current_path.x][current_path.y] = 1;
-        current_path = prev[current_path.x][current_path.y];
+  if (valid(maze, start.x, start.y) == 1 && valid(maze, end.x, end.y) == 1) {
+    int visited_point[MAX_SIZE][MAX_SIZE] = {{-1}};
+    Point queue[MAX_SIZE * MAX_SIZE];  // oчередь для хранения координат ячеек
+    Point prev[MAX_SIZE][MAX_SIZE] = {{{-1, -1}}};  // предыдущие координаты
+    int head = 0, tail = 0;
+    queue[tail++] = start;
+    visited_point[start.x][start.y] = 1;
+    while ((head < tail) || is_path != 1) {
+      Point current = queue[head++];  // берем текущую точку из очереди
+      if (current.y == end.y && current.x == end.x) {  //восст путь
+        Point current_path = end;
+        while (current_path.y != -1) {
+          path[current_path.x][current_path.y] = 1;
+          current_path = prev[current_path.x][current_path.y];
+        }
+        is_path = 1;
       }
-      is_path = 1;
+
+      check_neighboring_cells(maze, current, visited_point, queue, prev, &tail);
     }
-    check_neighboring_cells(maze, current, visited_point, queue, prev, &tail);
   }
   return is_path;
 }
@@ -322,8 +325,9 @@ void check_neighboring_cells(Maze *maze, Point cur, int v_p[][MAX_SIZE],
   int directions[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
   for (int i = 0; i < 4; i++) {
     int new_x = cur.x + directions[i][0], new_y = cur.y + directions[i][1];
-    if (valid(maze, new_x, new_y) && v_p[new_x][new_y] == 0 &&
-        !check_presence_of_walls(i, maze, cur, new_x, new_y)) {
+    if (valid(maze, new_x, new_y) &&
+        check_presence_of_walls(i, maze, cur, new_x, new_y) == 0 &&
+        v_p[new_x][new_y] == 0) {
       v_p[new_x][new_y] = 1;
       q[(*tail)++] = (Point){new_x, new_y};  // добавляем новую ячейку в очередь
       prev[new_x][new_y] =
