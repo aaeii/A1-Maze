@@ -161,11 +161,11 @@ void check_neighboring_cells(Maze *maze, Point cur, int v_p[][MAX_SIZE],
 int bfs(Maze *maze, Point start, Point end, int **path) {
   empty_arr(path);
   int is_path = 0;
-  int visited_point[MAX_SIZE][MAX_SIZE] = {0};
+  int visited_point[MAX_SIZE][MAX_SIZE] = {{-1}};
   Point queue[MAX_SIZE * MAX_SIZE];  // oчередь для хранения координат ячеек
   Point prev[MAX_SIZE][MAX_SIZE] = {{{-1, -1}}};  // предыдущие координаты
-  int head = 0, tail = 1;
-  queue[tail] = start;
+  int head = 0, tail = 0;
+  queue[tail++] = start;
   visited_point[start.x][start.y] = 1;
   while ((head < tail) || is_path != 1) {
     Point current = queue[head++];  // берем текущую точку из очереди
@@ -177,10 +177,13 @@ int bfs(Maze *maze, Point start, Point end, int **path) {
       }
       is_path = 1;
     }
-    check_neighboring_cells(maze, current, visited_point, queue, prev, &tail);
+
+    check_neighboring_cells(maze, current, visited_point, queue, prev,
+    &tail);
   }
   return is_path;
 }
+
 
 void free_path(int **path) {
   if (path) {

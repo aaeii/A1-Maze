@@ -106,7 +106,6 @@ void main_menu() {
 }
 
 void p_case(Point start, Point end, Maze *maze, int **path) {
-  // bfs(maze, start, end, path);
   attron(COLOR_PAIR(1));
   mvprintw(MENU_Y + 5, MENU_X, "Start point: ");
   refresh();
@@ -119,7 +118,13 @@ void p_case(Point start, Point end, Maze *maze, int **path) {
   attroff(COLOR_PAIR(1));
 
   if (valid(maze, start.x, start.y) == 1) {
-    render_maze(0, 0, maze, path, bfs(maze, start, end, path));
+    int path_check = bfs(maze, start, end, path);
+    if (path_check == 1) {
+      render_maze(0, 0, maze, path, 1);
+    } else {
+      mvprintw(MENU_Y + 5, MENU_X, "Path not found\n");
+      clear();
+    }
   } else {
     mvprintw(MENU_Y + 5, MENU_X, "Incorrect point\n");
     clear();
