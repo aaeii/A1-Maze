@@ -67,16 +67,11 @@ void print_menu(int start_y, int start_x) {
 
   mvprintw(start_y, start_x, "f [load maze from file]");
   mvprintw(start_y + 1, start_x, "g [generate maze]");
-  mvprintw(start_y + 2, start_x, "q [quit]");
-  mvprintw(start_y + 2, start_x, "p [show path]");
-  mvprintw(start_y + 3, start_x, "s [input start and end (if loaded)]");
-  mvprintw(start_y + 4, start_x, "q [quit]");
-
-  mvprintw(start_y, start_x + 40, "t [train model]");
-  mvprintw(start_y + 1, start_x + 40, "m [show ml path]");
-  mvprintw(start_y + 2, start_x + 40, "c [load cave from file]");
-  mvprintw(start_y + 3, start_x + 41, "n [next step]");
-  mvprintw(start_y + 4, start_x + 41, "q [quit step-by-step mode]");
+  mvprintw(start_y + 2, start_x, "p [show path if loaded]");
+  mvprintw(start_y + 3, start_x, "q [quit]");
+  mvprintw(start_y, start_x + 40, "c [load cave from file]");
+  mvprintw(start_y + 1, start_x + 41, "n [next step]");
+  mvprintw(start_y + 2, start_x + 41, "q [quit step-by-step mode]");
 
   attroff(COLOR_PAIR(1));
 }
@@ -92,6 +87,7 @@ void main_menu() {
   bool quit = false;
   char filepath[BUFFER];
   int ch = 0;
+  bool is_loaded = false;
 
   while (!quit) {
     print_menu(MENU_Y, MENU_X);
@@ -104,19 +100,23 @@ void main_menu() {
         break;
       case 'f':
         f_case(maze, filepath);
+        is_loaded = true;
         break;
       case 'g':
         g_case(maze);
+        is_loaded = true;
         break;
       case 'c':
         c_case(cave, filepath);
         break;
       case 'p':
-        p_case(start, end, maze, path);
+        if (is_loaded) {
+          p_case(start, end, maze, path);
+        }
         break;
       default:
         attron(COLOR_PAIR(3));
-        mvprintw(5, 0, "Incorrect input, please try again");
+        mvprintw(WARN_Y, WARN_X, "Incorrect input, please try again");
         attron(COLOR_PAIR(3));
         break;
     }
@@ -148,10 +148,10 @@ void f_case(Maze *maze, char *filepath) {
   get_filename(MENU_Y, MENU_X, filepath);
 
   if (load_maze(filepath, maze)) {
-    render_maze(MENU_Y + 6, MENU_X, maze, 0, 0);
+    render_maze(MAZE_Y, MAZE_X, maze, 0, 0);
   } else {
     attron(COLOR_PAIR(2));
-    mvprintw(5, 0, "Failed to load maze");
+    mvprintw(WARN_Y, WARN_X, "Failed to load maze");
     attron(COLOR_PAIR(2));
   }
 }
@@ -169,13 +169,13 @@ void g_case(Maze *maze) {
   if (is_correct_maze) {
     generate_maze(maze, g_rows, g_cols);
 
-    render_maze(MENU_Y + 6, MENU_X, maze, 0, 0);
+    render_maze(MAZE_Y, MAZE_X, maze, 0, 0);
 
     save_maze(maze, G_CASE_FILE);
 
   } else {
     attron(COLOR_PAIR(2));
-    mvprintw(5, 0, "Incorrect dimension\n");
+    mvprintw(WARN_Y, WARN_X, "Incorrect dimension\n");
     attroff(COLOR_PAIR(2));
   }
 }
@@ -211,7 +211,7 @@ void c_case(Cave *cave, char *filepath) {
       clear();
 
       attron(COLOR_PAIR(3));
-      mvprintw(5, 0, "Incorrect input, please try again\n");
+      mvprintw(WARN_Y, WARN_X, "Incorrect input, please try again\n");
       attron(COLOR_PAIR(3));
 
       print_menu(MENU_Y, MENU_X);
@@ -219,7 +219,7 @@ void c_case(Cave *cave, char *filepath) {
 
   } else {
     attron(COLOR_PAIR(2));
-    mvprintw(5, 0, "Failed to load cave\n");
+    mvprintw(WARN_Y, WARN_X, "Failed to load cave\n");
     attron(COLOR_PAIR(2));
   }
 }
@@ -255,16 +255,6 @@ bool get_cave_info(int start_y, int start_x, int *birth_limit, int *death_limit,
   noecho();
   attroff(COLOR_PAIR(1));
 
-  // FILE *file = fopen("data.txt", "w");
-
-  // fprintf(file, "%d\n", *birth_limit);
-  // fprintf(file, "%d\n", *death_limit);
-
-  // fprintf(file, "%d\n", *initial_chance);
-  // fprintf(file, "%d\n", *mode);
-
-  // fclose(file);
-
   if (*birth_limit < 0 || *birth_limit > 7 || *death_limit < 0 ||
       *death_limit > 7 || *initial_chance < 0 || *initial_chance > 100 ||
       (*mode != 0 && *mode != 1) || (*mode && *delay < 0)) {
@@ -279,16 +269,16 @@ bool get_cave_info(int start_y, int start_x, int *birth_limit, int *death_limit,
 
 void step_by_step_mode(Cave *cave, int birth_limit, int death_limit,
                        int can_change[MAX_SIZE][MAX_SIZE]) {
-  bool isDone = 0;
+  bool isDone = false;
   int ch = 0;
 
   while (!isDone) {
-    render_cave(MENU_Y + 7, MENU_X, cave);
+    render_cave(CAVE_Y, CAVE_X, cave);
     ch = getch();
     if (ch == 'n') {
       update_cave(cave, birth_limit, death_limit, can_change);
     } else if (ch == 'q') {
-      isDone = 1;
+      isDone = true;
     }
   }
 }
@@ -296,15 +286,15 @@ void step_by_step_mode(Cave *cave, int birth_limit, int death_limit,
 void automatic_mode(Cave *cave, int birth_limit, int death_limit, int delay,
                     int can_change[MAX_SIZE][MAX_SIZE]) {
   int ch = 0;
-  bool isDone = 0;
+  bool isDone = false;
   nodelay(stdscr, TRUE);
   while (!isDone) {
     update_cave(cave, birth_limit, death_limit, can_change);
-    render_cave(MENU_Y + 7, MENU_X, cave);
+    render_cave(CAVE_Y, CAVE_X, cave);
     msleep(delay);
     ch = getch();
     if (ch == 'q') {
-      isDone = 1;
+      isDone = true;
     }
   }
   nodelay(stdscr, FALSE);
@@ -349,11 +339,11 @@ void msleep(long msec) {
 
 void p_case(Point start, Point end, Maze *maze, int **path) {
   attron(COLOR_PAIR(1));
-  mvprintw(MENU_Y + 5, MENU_X, "Start point: ");
+  mvprintw(MENU_Y, MENU_X + 75, "Start point: ");
   refresh();
   echo();
   scanw("%d%d", &start.x, &start.y);
-  mvprintw(MENU_Y + 6, MENU_X, "End point: ");
+  mvprintw(MENU_Y + 1, MENU_X + 75, "End point: ");
   scanw("%d%d", &end.x, &end.y);
   noecho();
   clear();
@@ -369,27 +359,20 @@ void p_case(Point start, Point end, Maze *maze, int **path) {
   if (valid(maze, start.x, start.y) == 1 && valid(maze, end.x, end.y) == 1) {
     int path_check = bfs(maze, start, end, path);
     if (path_check == 1) {
-      render_maze(0, 0, maze, path, 1);
+      render_maze(MAZE_Y, MAZE_X, maze, path, 1);
     } else if (path_check == 0) {
-      mvprintw(MENU_Y + 5, MENU_X, "Path not found\n");
+      mvprintw(WARN_Y, WARN_X, "Path not found\n");
       refresh();
       // clear();
     }
   } else {
-    mvprintw(MENU_Y + 5, MENU_X, "Incorrect point\n");
+    mvprintw(WARN_Y, WARN_X, "Incorrect point\n");
     refresh();
     // clear();
   }
 }
 
 int main(void) {
-  // FILE *file = fopen("data.txt", "w");
-
-  // fprintf(file, "%d\n", *g_rows);
-  // fprintf(file, "%d\n", *g_cols);
-
-  // fclose(file);
-
   if (initscr() == NULL) {
     fprintf(stderr, "Failed to initialize ncurses\n");
     return EXIT_FAILURE;

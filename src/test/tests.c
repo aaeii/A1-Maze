@@ -1,34 +1,21 @@
-#include <check.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include "tests.h"
 
-#include "../maze/backend.h"
+START_TEST(test_create_cave) {
+  Cave *cave = create_cave();
 
-#define TEST_MAZE_ROWS 5
-#define TEST_MAZE_COLS 5
-#define TEST_MAX_MAZE_ROWS 50
-#define TEST_MAX_MAZE_COLS 50
-#define TEST_CAVE_ROWS 5
-#define TEST_CAVE_COLS 5
+  ck_assert_ptr_nonnull(cave);
+  ck_assert_int_eq(cave->rows, 0);
+  ck_assert_int_eq(cave->cols, 0);
 
-typedef enum { VALID, INVALID_START, INVALID_END } point_valid;
+  for (int i = 0; i < MAX_SIZE; i++) {
+    for (int j = 0; j < MAX_SIZE; j++) {
+      ck_assert_int_eq(cave->cells[i][j], 0);
+    }
+  }
 
-typedef enum { UP, DOWN, LEFT, RIGHT, ACTIONS_COUNT } actions;
-
-typedef enum { MOVE_VALID, MOVE_INVALID, MOVE_OUT } valid_move;
-
-enum path { NO_PATH = -9999 };
-
-// bool has_path(Maze *maze, Point *start, Point *end) {
-//   int **path = create_path();
-//   int distance = get_solution_bfs(maze, start, end, path);
-//   bool result = (distance != NO_PATH);
-//   free_path(path);
-//   return result;
-// }
+  free_cave(cave);
+}
+END_TEST
 
 START_TEST(test_create_maze) {
   Maze *maze = create_maze();
@@ -111,57 +98,6 @@ START_TEST(test_generate_maze) {
 }
 END_TEST
 
-// START_TEST(test_perfect_maze_generation) {
-//   Maze maze;
-//   Point start, end;
-//   generate_maze(&maze, TEST_MAX_MAZE_ROWS, TEST_MAX_MAZE_COLS);
-
-//   int num_tests = 10000;
-//   bool all_paths_exist = true;
-//   srand(time(NULL));
-
-//   for (int test = 0; test < num_tests; ++test) {
-//     start.x = rand() % maze.rows;
-//     start.y = rand() % maze.cols;
-//     end.x = rand() % maze.rows;
-//     end.y = rand() % maze.cols;
-//     if (!has_path(&maze, &start, &end) && all_paths_exist) {
-//       all_paths_exist = false;
-//     }
-//   }
-//   ck_assert_msg(all_paths_exist,
-//                 "Not all randomly chosen pairs of points are connected.");
-// }
-// END_TEST
-
-// START_TEST(ml_test) {
-//   Maze *maze = create_maze();
-//   int **path = create_path();
-//   Point start = {0, 0};
-//   Point end = {3, 3};
-//   float ***q_table = create_q_table();
-//   initialize_q_table(q_table);
-//   load_maze("test.txt", maze);
-//   train(&start, &end, q_table, maze, false);
-//   int p = get_solution_bfs(maze, &start, &end, path);
-//   ck_assert_int_eq(p, 8);
-//   int **path2 = create_path();
-//   find_path_with_q_table(&start, &end, path2, q_table);
-//   ck_assert_int_eq(path[end.x][end.y], path2[end.x][end.y]);
-//   save_q_table("test_save", q_table);
-//   FILE *f = fopen("test_save", "r");
-//   ck_assert_ptr_nonnull(f);
-//   if (f != NULL) {
-//     fclose(f);
-//     remove("test_save");
-//   }
-//   free_q_table(q_table);
-//   free_maze(maze);
-//   free_path(path);
-//   free_path(path2);
-// }
-// END_TEST
-
 START_TEST(load_maze_) {
   Maze *maze = create_maze();
   FILE *f = fopen("examples/maze4.txt", "r");
@@ -183,21 +119,6 @@ START_TEST(load_maze_) {
   free_maze(maze);
 }
 END_TEST
-
-// START_TEST(points) {
-//   Maze *maze = create_maze();
-//   Point start = {0, 0};
-//   Point end = {3, 4};
-//   load_maze("test.txt", maze);
-//   ck_assert_int_eq(areStartEndValid(maze, &start, &end), INVALID_END);
-//   start.x = 40;
-//   end.y = 3;
-//   ck_assert_int_eq(areStartEndValid(maze, &start, &end), INVALID_START);
-//   start.x = 0;
-//   ck_assert_int_eq(areStartEndValid(maze, &start, &end), VALID);
-//   free_maze(maze);
-// }
-// END_TEST
 
 START_TEST(max) { ck_assert_int_eq(get_max_size(), MAX_SIZE); }
 
@@ -300,13 +221,11 @@ int main(void) {
   TCase *tc_core = tcase_create("Core");
 
   tcase_add_test(tc_core, test_create_maze);
+  tcase_add_test(tc_core, test_create_cave);
   tcase_add_test(tc_core, test_load_maze);
   tcase_add_test(tc_core, test_save_maze);
   tcase_add_test(tc_core, test_generate_maze);
-  // tcase_add_test(tc_core, test_perfect_maze_generation);
-  // tcase_add_test(tc_core, ml_test);
   tcase_add_test(tc_core, load_maze_);
-  // tcase_add_test(tc_core, points);
   tcase_add_test(tc_core, max);
   tcase_add_test(tc_core, test_initialize_can_change);
   tcase_add_test(tc_core, test_count_live_neighbors);

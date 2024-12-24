@@ -152,13 +152,13 @@ int **create_path() {
   for (int i = 0; i < MAX_SIZE; i++) {
     path[i] = calloc(MAX_SIZE, sizeof(int));
 
-    // if (path[i] == NULL) {
-    //   for (int j = 0; j < i; j++) {
-    //     free(path[j]);
-    //   }
-    //   free(path);
-    //   return NULL;
-    // }
+    if (path[i] == NULL) {
+      for (int j = 0; j < i; j++) {
+        free(path[j]);
+      }
+      free(path);
+      return NULL;
+    }
   }
   return path;
 }
@@ -288,7 +288,7 @@ int bfs(Maze *maze, Point start, Point end, int **path) {
     visited_point[start.x][start.y] = 1;
     while ((head < tail) || is_path != 1) {
       Point current = queue[head++];  // берем текущую точку из очереди
-      if (current.y == end.y && current.x == end.x) {  //восст путь
+      if (current.y == end.y && current.x == end.x) {  // восст путь
         Point current_path = end;
         while (current_path.y != -1) {
           path[current_path.x][current_path.y] = 1;

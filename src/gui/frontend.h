@@ -14,6 +14,12 @@
 #define BUFFER 256
 #define MAX_HEIGHT 22
 #define MAX_WIDTH 115
+#define WARN_Y 6
+#define WARN_X 40
+#define MAZE_Y 4
+#define MAZE_X 0
+#define CAVE_Y 7
+#define CAVE_X 0
 
 int nanosleep(const struct timespec *req, struct timespec *rem);
 void msleep(long msec);

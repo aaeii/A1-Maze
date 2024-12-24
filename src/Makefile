@@ -86,14 +86,14 @@ run: $(BUILD_DIR)/$(TARGET)
 	$(BUILD_DIR)/$(TARGET)
 
 format:
-# cp ../materials/linters/.clang-format ../src/.clang-format
+	cp ../materials/linters/.clang-format ../src/.clang-format
 	clang-format -style=Google -n gui/*.c gui/*.h
 	clang-format -style=Google -n maze/*.c maze/*.h
-	clang-format -style=Google -n test/*.c
+	clang-format -style=Google -n test/*.c test/*.h
 
 	clang-format -style=Google -i gui/*.c gui/*.h
 	clang-format -style=Google -i maze/*.c maze/*.h
-	clang-format -style=Google -i test/*.c
+	clang-format -style=Google -i test/*.c test/*.h
 	rm -rf .clang-format
 
 
@@ -102,6 +102,6 @@ valgrind:
 	CK_FORK=no valgrind $(VALGRIND_FLAGS) --log-file=RESULT_VALGRIND.txt ./val_test.out	
 
 clean:
-	rm -rf report tests
+	rm -rf report tests out
 	rm -rf test_maze val_test.out RESULT_VALGRIND.txt s21_test.info g_maze.txt test_maze *.gcno *.gcda
 	
