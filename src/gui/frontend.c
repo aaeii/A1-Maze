@@ -4,8 +4,17 @@
 
 void render_maze(int start_y, int start_x, Maze *maze, int **path,
                  bool is_path) {
-  int cell_height = MAX_HEIGHT / maze->rows;
-  int cell_width = MAX_WIDTH / maze->cols;
+  int cell_height = 0;
+  int cell_width = 0;
+
+  if (maze->cols <= 22 && maze->rows <= 22) {
+    cell_height = MAX_HEIGHT / maze->rows;
+    cell_width = MAX_WIDTH / maze->cols;
+  } else {
+    cell_height = (MAX_HEIGHT * 3) / maze->rows;
+    cell_width = (MAX_WIDTH * 3) / maze->cols;
+  }
+
   int x = 0;
   int y = 0;
 
